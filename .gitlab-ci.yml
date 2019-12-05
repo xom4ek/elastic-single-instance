@@ -5,7 +5,7 @@ run_test_container:
   stage: deploy
   environment:
     name: test
-    url: http://test.elastic.nglm.rt.ru
+    url: https://test.elastic.nglm.rt.ru
     on_stop: stop_test_container
   before_script:
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -54,7 +54,7 @@ run_prod_container:
   when: manual
   environment:
     name: prod
-    url: http://prod.elastic.nglm.rt.ru
+    url: https://prod.elastic.nglm.rt.ru
   before_script:
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - sudo podman stop $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE|| echo "Container doesn't started"
