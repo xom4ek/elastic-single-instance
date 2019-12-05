@@ -1,0 +1,1 @@
+First try single-node elastic pod with kibana.
