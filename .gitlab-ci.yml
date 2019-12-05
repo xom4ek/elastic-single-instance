@@ -38,16 +38,16 @@ run_test_container:
 
 stop_test_container:
   stage: deploy
+  when: manual
+  environment:
+    name: test
+    action: stop
   script:
   - sudo podman stop $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE|| echo "Container doesn't started"
   - sudo podman stop $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE|| echo "Container doesn't started"
   - sudo podman rm $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE|| echo "Container doesn't started"
   - sudo podman rm $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE|| echo "Container doesn't started"
   - sudo rm /etc/nginx/conf.d/$CI_ENVIRONMENT_NAME.elastic.nglm.rt.ru.conf
-  environment:
-    name: test
-    action: stop
-  
 
 run_prod_container:
   stage: deploy
