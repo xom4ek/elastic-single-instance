@@ -38,7 +38,7 @@ run_test_container:
 
 run_prod_container:
   stage: deploy
-  when:
+  when: manuall
   environment:
     name: prod
     url: http://prod.elastic.nglm.rt.ru
