@@ -6,6 +6,7 @@ run_test_container:
   environment:
     name: test
     url: http://test.elastic.nglm.rt.ru
+    on_stop: stop_test_container
   before_script:
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - sudo podman stop $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE|| echo "Container doesn't started"
@@ -34,6 +35,19 @@ run_test_container:
 #      - .gitlab-ci.yml
   only:
     - master
+
+stop_test_container:
+  stage: deploy
+  script:
+  - sudo podman stop $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE|| echo "Container doesn't started"
+  - sudo podman stop $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE|| echo "Container doesn't started"
+  - sudo podman rm $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE|| echo "Container doesn't started"
+  - sudo podman rm $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE|| echo "Container doesn't started"
+  - sudo rm /etc/nginx/conf.d/$CI_ENVIRONMENT_NAME.elastic.nglm.rt.ru.conf
+  environment:
+    name: test
+    action: stop
+  
 
 run_prod_container:
   stage: deploy
