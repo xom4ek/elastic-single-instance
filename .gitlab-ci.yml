@@ -58,7 +58,6 @@ run_prod_container:
     - sudo podman pod create --name $POD_NAME -p $PORT_EL:9200 -p $PORT_PM:9600 -p $PORT_KIBANA:5601"
     - sudo podman run --env-file=$ELASTIC_ENV_FILE -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:latest
     - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest
-    - sudo rm /etc/nginx/conf.d/$CI_ENVIRONMENT_NAME.elastic.nglm.rt.ru
     - sudo cp /config/nginx.config /etc/nginx/conf.d/$CI_ENVIRONMENT_NAME.elastic.nglm.rt.ru
     - sudo echo "s/#ENVIRONMENT/$CI_ENVIRONMENT_NAME/g" > commands.sed
     - sudo echo "s/#PORT_KIBANA/$PORT_KIBANA/g" >> commands.sed
