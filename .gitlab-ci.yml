@@ -8,6 +8,7 @@ run_test_container:
     url: https://test.elastic.nglm.rt.ru
     on_stop: stop_test_container
   before_script:
+    - source $ELASTIC_ENV_FILE
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - sudo podman stop $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE|| echo "Container doesn't started"
     - sudo podman stop $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE|| echo "Container doesn't started"
@@ -56,6 +57,7 @@ run_prod_container:
     name: prod
     url: https://prod.elastic.nglm.rt.ru
   before_script:
+    - source $ELASTIC_ENV_FILE
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - sudo podman stop $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE|| echo "Container doesn't started"
     - sudo podman stop $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE|| echo "Container doesn't started"
