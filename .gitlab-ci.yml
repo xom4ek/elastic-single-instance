@@ -95,8 +95,8 @@ build_prod_images:
   script:
     - source $ELASTIC_ENV_FILE
     - echo "s/#ENVIRONMENT/$CI_ENVIRONMENT_NAME/g" > commands.sed
-    - echo "s/$LOGSTASH_USER/$LOGSTASH_USER/g" >> commands.sed
-    - echo "s/$LOGSTASH_PASSWORD/$LOGSTASH_PASSWORD/g" >> commands.sed
+    - echo "s/#LOGSTASH_USER/$LOGSTASH_USER/g" >> commands.sed
+    - echo "s/#LOGSTASH_PASSWORD/$LOGSTASH_PASSWORD/g" >> commands.sed
     - sed -i -f commands.sed ./config/logstash/pipelines/*
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE -f Dockerfiles/elastic/Dockerfile .
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$KIBANA_IMAGE -f Dockerfiles/kibana/Dockerfile .
