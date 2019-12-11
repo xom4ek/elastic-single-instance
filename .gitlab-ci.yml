@@ -100,9 +100,6 @@ build_prod_images:
     - sudo podman push $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE
   only:
     - master
-  artifacts:
-    paths:
-      - nginx-configs/
 
 run_prod_container:
   stage: deploy
@@ -110,9 +107,6 @@ run_prod_container:
   environment:
     name: prod
     url: https://kibana.prod.nglm.rt.ru
-  artifacts:
-    paths:
-      - nginx-configs/
   before_script:
     - source $ELASTIC_ENV_FILE
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
