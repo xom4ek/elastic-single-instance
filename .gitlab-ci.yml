@@ -85,9 +85,6 @@ build_prod_images:
   environment:
     name: prod
     url: https://kibana.prod.nglm.rt.ru
-  artifacts:
-    paths:
-      - nginx-configs/
   before_script:
     - date
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -115,6 +112,7 @@ run_prod_container:
     url: https://kibana.prod.nglm.rt.ru
   before_script:
     - source $ELASTIC_ENV_FILE
+    - ls -la nginx-configs/
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - sudo podman stop $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE|| echo "Container doesn't started"
     - sudo podman stop $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE|| echo "Container doesn't started"
@@ -133,8 +131,5 @@ run_prod_container:
     - sudo nginx -s reload
   after_script:
     - date
-  except:
-    changes:
-      - .gitlab-ci.yml
   only:
     - master
