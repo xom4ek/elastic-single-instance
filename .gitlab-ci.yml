@@ -58,8 +58,8 @@ build_prod_nginx_configs:
     url: https://kibana.prod.nglm.rt.ru
   before_script:
     - date
-  script:
     - sudo mkdir ./nginx-configs
+  script:
     - sudo echo "s/#ENVIRONMENT/$CI_ENVIRONMENT_NAME/g" > commands.sed
     - sudo echo "s/#PORT_KIBANA/$PORT_KIBANA/g" >> commands.sed
     - sudo echo "s/#PORT_EL/$PORT_EL/g" >> commands.sed
