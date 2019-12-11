@@ -110,7 +110,7 @@ build_prod_images:
   only:
     - master
 
-run_prod_container:
+deploy_all:
   stage: deploy
   when: manual
   environment:
@@ -140,6 +140,25 @@ run_prod_container:
     - echo "include /etc/nginx/conf.d/wombat/*;" > wombat.conf
     - sudo cp wombat.conf /etc/nginx/conf.d/wombat.conf
     - sudo nginx -s reload
+  after_script:
+    - date
+  only:
+    - master
+
+deploy_only_logstash:
+  stage: deploy
+  when: manual
+  environment:
+    name: prod
+    url: https://kibana.prod.nglm.rt.ru
+  before_script:
+    - source $ELASTIC_ENV_FILE
+    - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - sudo podman stop $CI_ENVIRONMENT_NAME-$LOGSTASH_IMAGE|| echo "Container doesn't started"
+    - sudo podman rm $CI_ENVIRONMENT_NAME-$LOGSTASH_IMAGE|| echo "Container doesn't started"
+    - sudo podman rmi $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:latest || echo "Image doesn't exist"
+  script:
+    - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$LOGSTASH_IMAGE $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:latest
   after_script:
     - date
   only:
