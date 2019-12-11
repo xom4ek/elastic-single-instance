@@ -60,6 +60,7 @@ build_prod_nginx_configs:
     - date
     - mkdir ./nginx-configs
   script:
+    - source $ELASTIC_ENV_FILE
     - echo "s/#ENVIRONMENT/$CI_ENVIRONMENT_NAME/g" > commands.sed
     - echo "s/#PORT_KIBANA/$PORT_KIBANA/g" >> commands.sed
     - echo "s/#PORT_EL/$PORT_EL/g" >> commands.sed
@@ -90,6 +91,7 @@ build_prod_images:
     - sudo podman pull registry.gitlab.nglm.rt.ru/wombat/elastic-single-instance/opendistro-for-elasticsearch-kibana
     - sudo podman pull registry.gitlab.nglm.rt.ru/wombat/elastic-single-instance/logstash-oss
   script:
+    - source $ELASTIC_ENV_FILE
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE -f Dockerfiles/elastic/Dockerfile .
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$KIBANA_IMAGE -f Dockerfiles/kibana/Dockerfile .
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE -f Dockerfiles/logstash/Dockerfile .
