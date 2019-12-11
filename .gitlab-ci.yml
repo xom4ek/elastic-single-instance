@@ -95,6 +95,7 @@ build_prod_images:
     - sudo cp config/elastic/nginx.conf ./nginx-configs/elastic.conf
     - sudo cp config/kibana/nginx.conf ./nginx-configs/kibana.conf
     - sudo cp config/logstash/nginx.conf ./nginx-configs/logstash.conf
+    - sudo chmod a+x ./ports.sh
     - sudo ./ports.sh
     - sudo sed -i -f commands.sed ./nginx-configs/
   after_script:
