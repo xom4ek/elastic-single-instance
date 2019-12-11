@@ -85,6 +85,7 @@ build_prod_images:
     url: https://kibana.prod.nglm.rt.ru
   before_script:
     - date
+    - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
   script:
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE -f Dockerfiles/elastic/Dockerfile .
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$KIBANA_IMAGE -f Dockerfiles/kibana/Dockerfile .
