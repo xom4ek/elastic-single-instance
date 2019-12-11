@@ -88,9 +88,12 @@ build_prod_images:
   script:
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE -f Dockerfiles/elastic/Dockerfile .
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$KIBANA_IMAGE -f Dockerfiles/kibana/Dockerfile .
-    #- sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE -f Dockerfiles/logstash/Dockerfile .
+    - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE -f Dockerfiles/logstash/Dockerfile .
   after_script:
-    - ./nginx-configs/
+    - ls -la ./nginx-configs/
+    - sudo podman push $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE
+    - sudo podman push $CI_REGISTRY_IMAGE/$KIBANA_IMAGE
+    - sudo podman push $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE
   only:
     - master
   artifacts:
