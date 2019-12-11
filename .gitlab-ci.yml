@@ -86,8 +86,10 @@ build_prod_images:
   before_script:
     - date
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - sudo podman pull registry.gitlab.nglm.rt.ru/wombat/elastic-single-instance/opendistro-for-elasticsearch
+    - sudo podman pull registry.gitlab.nglm.rt.ru/wombat/elastic-single-instance/opendistro-for-elasticsearch-kibana
+    - sudo podman pull registry.gitlab.nglm.rt.ru/wombat/elastic-single-instance/logstash-oss
   script:
-    - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE -f Dockerfiles/elastic/Dockerfile .
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$KIBANA_IMAGE -f Dockerfiles/kibana/Dockerfile .
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE -f Dockerfiles/logstash/Dockerfile .
