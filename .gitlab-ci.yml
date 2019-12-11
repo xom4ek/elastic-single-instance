@@ -126,8 +126,8 @@ run_prod_container:
     - sudo podman pod create --name $POD_NAME -p $PORT_EL:9200 -p $PORT_PM:9600 -p $PORT_KIBANA:5601 -p $PORT_LOGSTASH:5044
     - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:latest
     - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest
-    - sudo cp nginx-configs/* /etc/nginx/conf.d/wombat/
     - sudo mkdir /etc/nginx/conf.d/wombat/
+    - sudo cp nginx-configs/* /etc/nginx/conf.d/wombat/
     - sudo echo "include /etc/nginx/conf.d/wombat/*;" > /etc/nginx/conf.d/wombat.conf
     - sudo nginx -s reload
   after_script:
