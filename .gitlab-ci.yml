@@ -55,7 +55,7 @@ run_prod_container:
   when: manual
   environment:
     name: prod
-    url: https://prod.elastic.nglm.rt.ru
+    url: https://kibana.prod.nglm.rt.ru
   before_script:
     - source $ELASTIC_ENV_FILE
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
