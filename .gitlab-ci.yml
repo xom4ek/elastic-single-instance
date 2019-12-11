@@ -70,7 +70,7 @@ build_prod_nginx_configs:
     - bash -c "./ports.sh"
     - sed -i -f commands.sed ./nginx-configs/*
   after_script:
-    - date
+    - ls -la ./nginx-configs/
   only:
     - master
   artifacts:
@@ -88,9 +88,9 @@ build_prod_images:
   script:
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE -f Dockerfiles/elastic/Dockerfile .
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$KIBANA_IMAGE -f Dockerfiles/kibana/Dockerfile .
-    - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE -f Dockerfiles/logstash/Dockerfile .
+    #- sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE -f Dockerfiles/logstash/Dockerfile .
   after_script:
-    - date
+    - ./nginx-configs/
   only:
     - master
   artifacts:
