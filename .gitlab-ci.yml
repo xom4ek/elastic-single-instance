@@ -68,7 +68,7 @@ build_prod_nginx_configs:
     - cp config/logstash/nginx.conf ./nginx-configs/logstash.conf
     - chmod a+x ./ports.sh
     - bash -c "./ports.sh"
-    - sed -i -f commands.sed ./nginx-configs/
+    - sed -i -f commands.sed ./nginx-configs/*
   after_script:
     - date
   only:
