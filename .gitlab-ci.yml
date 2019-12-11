@@ -58,16 +58,16 @@ build_prod_nginx_configs:
     url: https://kibana.prod.nglm.rt.ru
   before_script:
     - date
-    - sudo mkdir ./nginx-configs
+    - mkdir ./nginx-configs
   script:
-    - sudo echo "s/#ENVIRONMENT/$CI_ENVIRONMENT_NAME/g" > commands.sed
-    - sudo echo "s/#PORT_KIBANA/$PORT_KIBANA/g" >> commands.sed
-    - sudo echo "s/#PORT_EL/$PORT_EL/g" >> commands.sed
-    - sudo cp config/elastic/nginx.conf ./nginx-configs/elastic.conf
-    - sudo cp config/kibana/nginx.conf ./nginx-configs/kibana.conf
-    - sudo cp config/logstash/nginx.conf ./nginx-configs/logstash.conf
-    - sudo bash -c "./ports.sh"
-    - sudo sed -i -f commands.sed ./nginx-configs/
+    - echo "s/#ENVIRONMENT/$CI_ENVIRONMENT_NAME/g" > commands.sed
+    - echo "s/#PORT_KIBANA/$PORT_KIBANA/g" >> commands.sed
+    - echo "s/#PORT_EL/$PORT_EL/g" >> commands.sed
+    - cp config/elastic/nginx.conf ./nginx-configs/elastic.conf
+    - cp config/kibana/nginx.conf ./nginx-configs/kibana.conf
+    - cp config/logstash/nginx.conf ./nginx-configs/logstash.conf
+    - bash -c "./ports.sh"
+    - sed -i -f commands.sed ./nginx-configs/
   after_script:
     - date
   only:
@@ -85,19 +85,9 @@ build_prod_images:
   before_script:
     - date
   script:
-    - sudo mkdir ./nginx-configs
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE -f Dockerfiles/elastic/Dockerfile .
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$KIBANA_IMAGE -f Dockerfiles/kibana/Dockerfile .
     - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE -f Dockerfiles/logstash/Dockerfile .
-    - sudo echo "s/#ENVIRONMENT/$CI_ENVIRONMENT_NAME/g" > commands.sed
-    - sudo echo "s/#PORT_KIBANA/$PORT_KIBANA/g" >> commands.sed
-    - sudo echo "s/#PORT_EL/$PORT_EL/g" >> commands.sed
-    - sudo cp config/elastic/nginx.conf ./nginx-configs/elastic.conf
-    - sudo cp config/kibana/nginx.conf ./nginx-configs/kibana.conf
-    - sudo cp config/logstash/nginx.conf ./nginx-configs/logstash.conf
-    - sudo chmod a+x ./ports.sh
-    - sudo ./ports.sh
-    - sudo sed -i -f commands.sed ./nginx-configs/
   after_script:
     - date
   only:
