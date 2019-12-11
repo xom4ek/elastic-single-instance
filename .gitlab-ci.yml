@@ -128,7 +128,8 @@ run_prod_container:
     - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest
     - sudo mkdir /etc/nginx/conf.d/wombat/
     - sudo cp nginx-configs/* /etc/nginx/conf.d/wombat/
-    - sudo echo "include /etc/nginx/conf.d/wombat/*;" > /etc/nginx/conf.d/wombat.conf
+    - echo "include /etc/nginx/conf.d/wombat/*;" > wombat.conf
+    - sudo cp wombat.conf /etc/nginx/conf.d/wombat.conf
     - sudo nginx -s reload
   after_script:
     - date
