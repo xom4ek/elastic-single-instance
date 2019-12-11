@@ -72,12 +72,12 @@ run_prod_container:
     - sudo podman pod create --name $POD_NAME -p $PORT_EL:9200 -p $PORT_PM:9600 -p $PORT_KIBANA:5601 -p $PORT_LOGSTASH:5044
     - sudo podman run -e "discovery.type=single-node" -e "bootstrap.memory_lock=true" -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:latest
     - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest
-    - sudo cp config/nginx.config /etc/nginx/conf.d/$CI_ENVIRONMENT_NAME.elastic.nglm.rt.ru.conf
+    - sudo cp config/nginx.config /etc/nginx/conf.d/wombat.$CI_ENVIRONMENT_NAME.conf
     - sudo echo "s/#ENVIRONMENT/$CI_ENVIRONMENT_NAME/g" > commands.sed
     - sudo echo "s/#PORT_KIBANA/$PORT_KIBANA/g" >> commands.sed
     - sudo echo "s/#PORT_EL/$PORT_EL/g" >> commands.sed
     - sudo echo "s/#PORT_LOGSTASH/$PORT_LOGSTASH/g" >> commands.sed
-    - sudo sed -i -f commands.sed /etc/nginx/conf.d/$CI_ENVIRONMENT_NAME.elastic.nglm.rt.ru.conf
+    - sudo sed -i -f commands.sed /etc/nginx/conf.d/wombat.$CI_ENVIRONMENT_NAME.conf
     - sudo systemctl restart nginx
   after_script:
     - date
