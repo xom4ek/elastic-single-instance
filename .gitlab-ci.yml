@@ -126,7 +126,7 @@ run_prod_container:
     - sudo podman pod create --name $POD_NAME -p $PORT_EL:9200 -p $PORT_PM:9600 -p $PORT_KIBANA:5601 -p $PORT_LOGSTASH:5044
     - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:latest
     - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest
-    - sudo mkdir /etc/nginx/conf.d/wombat/
+    - sudo mkdir /etc/nginx/conf.d/wombat/ || echo "Directory already exist"
     - sudo cp nginx-configs/* /etc/nginx/conf.d/wombat/
     - echo "include /etc/nginx/conf.d/wombat/*;" > wombat.conf
     - sudo cp wombat.conf /etc/nginx/conf.d/wombat.conf
