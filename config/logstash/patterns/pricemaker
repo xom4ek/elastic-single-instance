@@ -1,0 +1,6 @@
+DATA_END %{DAY} %{MONTH} %{MONTHDAY} %{TIME} %{WORD} %{YEAR}
+DATA_IND (?<ind_D>%{NUMBER}):(?<ind_HH>(?:2[01234]|[01]?[0-9])):(?<ind_mm>%{MINUTE})(?<ind_S>(?::%{SECOND})(?![0-9]))
+START_ROW ... \[%{GREEDYDATA:thread}\] %{DATA_IND}:?
+TOTAL_TIME \[%{WORD:requesttype}\]?: Response for Request \'%{GREEDYDATA:method}\' Processed: Ends at %{DATA_END:httpdate} ?. Total Time Taken.?:.?%{NUMBER:time_taken}ms
+INPUT_HTTP \[%{WORD:requesttype}\]?: Receives Request \'%{GREEDYDATA:method}\' with request parameter map: \{%{GREEDYDATA:httpparametrs}\}, at Time %{DATA_END:httpdate}
+ERROR_MESSAGE message %{GREEDYDATA:error_code} Lookup Component %{WORD:component}:? %{GREEDYDATA:tail}

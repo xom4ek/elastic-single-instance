@@ -1,0 +1,9 @@
+# - pipeline.id: pricemaker_prod
+#   pipeline.workers: 1
+#   pipeline.batch.size: 1
+#   path.config: "./config/pipelines/rlx-pm.conf"
+
+# - pipeline.id: pricemaker_prod_debug
+#   pipeline.workers: 1
+#   pipeline.batch.size: 1
+#   path.config: "./config/pipelines/rlx-pm-debug.conf"

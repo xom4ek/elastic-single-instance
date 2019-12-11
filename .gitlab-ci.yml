@@ -1,4 +1,5 @@
 stages:
+  - build
   - deploy
 
 # run_test_container:
@@ -50,12 +51,69 @@ stages:
 #   - sudo podman rm $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE|| echo "Container doesn't started"
 #   - sudo rm /etc/nginx/conf.d/$CI_ENVIRONMENT_NAME.elastic.nglm.rt.ru.conf
 
+build_prod_nginx_configs:
+  stage: build
+  environment:
+    name: prod
+    url: https://kibana.prod.nglm.rt.ru
+  before_script:
+    - date
+  script:
+    - sudo mkdir ./nginx-configs
+    - sudo echo "s/#ENVIRONMENT/$CI_ENVIRONMENT_NAME/g" > commands.sed
+    - sudo echo "s/#PORT_KIBANA/$PORT_KIBANA/g" >> commands.sed
+    - sudo echo "s/#PORT_EL/$PORT_EL/g" >> commands.sed
+    - sudo cp config/elastic/nginx.conf ./nginx-configs/elastic.conf
+    - sudo cp config/kibana/nginx.conf ./nginx-configs/kibana.conf
+    - sudo cp config/logstash/nginx.conf ./nginx-configs/logstash.conf
+    - sudo ./ports.sh
+    - sudo sed -i -f commands.sed ./nginx-configs/
+  after_script:
+    - date
+  only:
+    - master
+  artifacts:
+    paths:
+      - nginx-configs/
+
+
+build_prod_images:
+  stage: build
+  environment:
+    name: prod
+    url: https://kibana.prod.nglm.rt.ru
+  before_script:
+    - date
+  script:
+    - sudo mkdir ./nginx-configs
+    - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE -f Dockerfiles/elastic/Dockerfile .
+    - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$KIBANA_IMAGE -f Dockerfiles/kibana/Dockerfile .
+    - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE -f Dockerfiles/logstash/Dockerfile .
+    - sudo echo "s/#ENVIRONMENT/$CI_ENVIRONMENT_NAME/g" > commands.sed
+    - sudo echo "s/#PORT_KIBANA/$PORT_KIBANA/g" >> commands.sed
+    - sudo echo "s/#PORT_EL/$PORT_EL/g" >> commands.sed
+    - sudo cp config/elastic/nginx.conf ./nginx-configs/elastic.conf
+    - sudo cp config/kibana/nginx.conf ./nginx-configs/kibana.conf
+    - sudo cp config/logstash/nginx.conf ./nginx-configs/logstash.conf
+    - sudo ./ports.sh
+    - sudo sed -i -f commands.sed ./nginx-configs/
+  after_script:
+    - date
+  only:
+    - master
+  artifacts:
+    paths:
+      - nginx-configs/
+
 run_prod_container:
   stage: deploy
   when: manual
   environment:
     name: prod
     url: https://kibana.prod.nglm.rt.ru
+  artifacts:
+    paths:
+      - nginx-configs/
   before_script:
     - source $ELASTIC_ENV_FILE
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
@@ -65,20 +123,15 @@ run_prod_container:
     - sudo podman rm $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE|| echo "Container doesn't started"
     - sudo podman rmi $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:latest || echo "Image doesn't exist"
     - sudo podman rmi $CI_REGISTRY_IMAGE/$KIBANA_IMAG:latest || echo "Image doesn't exist"
-    - sudo podman pull $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:latest
-    - sudo podman pull $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest
     - sudo podman pod rm $POD_NAME || echo "Pod doesn't exist"
   script:
     - sudo podman pod create --name $POD_NAME -p $PORT_EL:9200 -p $PORT_PM:9600 -p $PORT_KIBANA:5601 -p $PORT_LOGSTASH:5044
     - sudo podman run -e "discovery.type=single-node" -e "bootstrap.memory_lock=true" -e "ES_JAVA_OPTS=-Xms512m -Xmx512m" -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:latest
     - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest
-    - sudo cp config/nginx.config /etc/nginx/conf.d/wombat.$CI_ENVIRONMENT_NAME.conf
-    - sudo echo "s/#ENVIRONMENT/$CI_ENVIRONMENT_NAME/g" > commands.sed
-    - sudo echo "s/#PORT_KIBANA/$PORT_KIBANA/g" >> commands.sed
-    - sudo echo "s/#PORT_EL/$PORT_EL/g" >> commands.sed
-    - sudo echo "s/#PORT_LOGSTASH/$PORT_LOGSTASH/g" >> commands.sed
-    - sudo sed -i -f commands.sed /etc/nginx/conf.d/wombat.$CI_ENVIRONMENT_NAME.conf
-    - sudo systemctl restart nginx
+    - sudo cp nginx-configs/* /etc/nginx/conf.d/wombat/
+    - sudo mkdir /etc/nginx/conf.d/wombat/
+    - sudo echo "include /etc/nginx/conf.d/wombat/*;" > /etc/nginx/conf.d/wombat.conf
+    - sudo nginx -s reload
   after_script:
     - date
   except:
