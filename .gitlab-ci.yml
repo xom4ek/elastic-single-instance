@@ -67,10 +67,10 @@ build_prod_nginx_configs:
     - cp config/elastic/nginx.conf ./nginx-configs/elastic.conf
     - cp config/kibana/nginx.conf ./nginx-configs/kibana.conf
     - cp config/logstash/nginx.conf ./nginx-configs/logstash.conf
-    - rm ./nginx-configs/logstash.conf
     - chmod a+x ./ports.sh
     - bash -c "./ports.sh"
     - sed -i -f commands.sed ./nginx-configs/*
+    - rm ./nginx-configs/logstash.conf
   after_script:
     - ls -la ./nginx-configs/
     - head -5 ./nginx-configs/*
