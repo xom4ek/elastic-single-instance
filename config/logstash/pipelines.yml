@@ -2,16 +2,13 @@
   pipeline.workers: 1
   pipeline.batch.size: 1
   path.config: "./config/pipelines/rlx-pm.conf"
-sss
+
 # - pipeline.id: pricemaker_prod_debug
 #   pipeline.workers: 1
 #   pipeline.batch.size: 1
 #   path.config: "./config/pipelines/rlx-pm-debug.conf"
-s
+
 - pipeline.id: cdi_prod
   pipeline.workers: 1
   pipeline.batch.size: 1
   path.config: "./config/pipelines/cdi_logs.conf"
-
-
-sdlfkasdlkfnasdklfn
