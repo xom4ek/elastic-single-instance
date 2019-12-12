@@ -98,7 +98,7 @@ build_prod_elastic_image:
   after_script:
     - source $ELASTIC_ENV_FILE
     - sudo podman push $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:build
-    - sudo podmanrmi
+    - sudo podman rmi $(sudo podman images | grep '<none>' | awk '{ print $3}')
 
   only:
     - master
@@ -119,7 +119,7 @@ build_prod_kibana_image:
   after_script:
     - source $ELASTIC_ENV_FILE
     - sudo podman push $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:build
-    - sudo podmanrmi
+    - sudo podman rmi $(sudo podman images | grep '<none>' | awk '{ print $3}')
   only:
     - master
 
@@ -142,7 +142,7 @@ build_prod_logstash_image:
   after_script:
     - source $ELASTIC_ENV_FILE
     - sudo podman push $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build
-    - sudo podmanrmi
+    - sudo podman rmi $(sudo podman images | grep '<none>' | awk '{ print $3}')
   only:
     - master
 
@@ -183,7 +183,7 @@ deploy_all:
     - sudo podman rmi $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:latest || echo "Image doesn't exist"
     - sudo podman pod rm $POD_NAME || echo "Pod doesn't exist"
     - sudo podman pull $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build
-    - sudo podman pull $CI_REGISTRY_IMAGE/$ELASTIC_IMAGEE:build
+    - sudo podman pull $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:build
     - sudo podman pull $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:build
     - sudo podman tag $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:build $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:latest
     - sudo podman rmi $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:build
