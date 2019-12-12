@@ -81,8 +81,9 @@ build_prod_nginx_configs:
       - nginx-configs/
 
 
-build_prod_images:
+build_prod_elastic_image:
   stage: build
+  when: manual
   environment:
     name: prod
     url: https://kibana.prod.nglm.rt.ru
@@ -90,7 +91,45 @@ build_prod_images:
     - date
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - sudo podman pull registry.gitlab.nglm.rt.ru/wombat/elastic-single-instance/opendistro-for-elasticsearch
+  script:
+    - source $ELASTIC_ENV_FILE
+    - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:build -f Dockerfiles/elastic/Dockerfile .
+  after_script:
+    - source $ELASTIC_ENV_FILE
+    - sudo podman push $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:build
+    - sudo podmanrmi
+
+  only:
+    - master
+
+build_prod_kibana_image:
+  stage: build
+  when: manual
+  environment:
+    name: prod
+    url: https://kibana.prod.nglm.rt.ru
+  before_script:
+    - date
+    - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - sudo podman pull registry.gitlab.nglm.rt.ru/wombat/elastic-single-instance/opendistro-for-elasticsearch-kibana
+  script:
+    - source $ELASTIC_ENV_FILE
+    - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:build -f Dockerfiles/kibana/Dockerfile .
+  after_script:
+    - source $ELASTIC_ENV_FILE
+    - sudo podman push $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:build
+    - sudo podmanrmi
+  only:
+    - master
+
+build_prod_logstash_image:
+  stage: build
+  environment:
+    name: prod
+    url: https://kibana.prod.nglm.rt.ru
+  before_script:
+    - date
+    - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - sudo podman pull registry.gitlab.nglm.rt.ru/wombat/elastic-single-instance/logstash-oss
   script:
     - source $ELASTIC_ENV_FILE
@@ -98,15 +137,11 @@ build_prod_images:
     - echo "s/#LOGSTASH_USER/$LOGSTASH_USER/g" >> commands.sed
     - echo "s/#LOGSTASH_PASSWORD/$LOGSTASH_PASSWORD/g" >> commands.sed
     - sed -i -f commands.sed ./config/logstash/pipelines/*
-    - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE -f Dockerfiles/elastic/Dockerfile .
-    - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$KIBANA_IMAGE -f Dockerfiles/kibana/Dockerfile .
-    - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE -f Dockerfiles/logstash/Dockerfile .
+    - sudo buildah bud --no-cache -t $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build -f Dockerfiles/logstash/Dockerfile .
   after_script:
     - source $ELASTIC_ENV_FILE
-    - sudo podman push $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE
-    - sudo podman push $CI_REGISTRY_IMAGE/$KIBANA_IMAGE
-    - sudo podman push $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE
-    - tail -10 ./config/logstash/pipelines/*
+    - sudo podman push $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build
+    - sudo podmanrmi
   only:
     - master
 
@@ -130,6 +165,15 @@ deploy_all:
     - sudo podman rmi $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest || echo "Image doesn't exist"
     - sudo podman rmi $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:latest || echo "Image doesn't exist"
     - sudo podman pod rm $POD_NAME || echo "Pod doesn't exist"
+    - sudo podman pull $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build
+    - sudo podman pull $CI_REGISTRY_IMAGE/$ELASTIC_IMAGEE:build
+    - sudo podman pull $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:build
+    - sudo podman tag $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:build $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:latest
+    - sudo podman rmi $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:build
+    - sudo podman tag $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:build $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest
+    - sudo podman rmi $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:build
+    - sudo podman tag $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:latest
+    - sudo podman rmi $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build
   script:
     - sudo podman pod create --name $POD_NAME -p $PORT_EL:9200 -p $PORT_PM:9600 -p $PORT_KIBANA:5601 -p 5040-5050:5040-5050
     - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$ELASTIC_IMAGE $CI_REGISTRY_IMAGE/$ELASTIC_IMAGE:latest
@@ -155,10 +199,35 @@ deploy_only_logstash:
     - source $ELASTIC_ENV_FILE
     - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
     - sudo podman stop $CI_ENVIRONMENT_NAME-$LOGSTASH_IMAGE|| echo "Container doesn't started"
-    - sudo podman rm $CI_ENVIRONMENT_NAME-$LOGSTASH_IMAGE|| echo "Container doesn't started"
+    - sudo podman rm $CI_ENVIRONMENT_NAME-$LOGSTASH_IMAGE || echo "Container doesn't started"
     - sudo podman rmi $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:latest || echo "Image doesn't exist"
+    - sudo podman pull $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build
+    - sudo podman tag $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:latest
+    - sudo podman rmi $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build
   script:
     - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$LOGSTASH_IMAGE $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:latest
+  after_script:
+    - date
+  only:
+    - master
+
+deploy_only_kibana:
+  stage: deploy
+  when: manual
+  environment:
+    name: prod
+    url: https://kibana.prod.nglm.rt.ru
+  before_script:
+    - source $ELASTIC_ENV_FILE
+    - sudo podman login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - sudo podman stop $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE|| echo "Container doesn't started"
+    - sudo podman rm $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE || echo "Container doesn't started"
+    - sudo podman rmi $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest || echo "Image doesn't exist"
+    - sudo podman pull $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:build
+    - sudo podman tag $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:build $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest
+    - sudo podman rmi $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:build
+  script:
+    - sudo podman run -d --pod $POD_NAME --name $CI_ENVIRONMENT_NAME-$KIBANA_IMAGE $CI_REGISTRY_IMAGE/$KIBANA_IMAGE:latest
   after_script:
     - date
   only:
