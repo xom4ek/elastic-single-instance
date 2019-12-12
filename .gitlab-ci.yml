@@ -1,6 +1,7 @@
 stages:
   - build
   - deploy
+  - test
 
 # run_test_container:
 #   stage: deploy
@@ -142,6 +143,22 @@ build_prod_logstash_image:
     - source $ELASTIC_ENV_FILE
     - sudo podman push $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build
     - sudo podmanrmi
+  only:
+    - master
+
+
+test_prod_logstash_image:
+  stage: test
+  environment:
+    name: prod
+    url: https://kibana.prod.nglm.rt.ru
+  before_script:
+    - date
+  script:
+    - source $ELASTIC_ENV_FILE
+    - sudo podman run -it --rm $CI_REGISTRY_IMAGE/$LOGSTASH_IMAGE:build -t
+  after_script:
+    - date
   only:
     - master
 
