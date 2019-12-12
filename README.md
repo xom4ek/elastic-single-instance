@@ -1,1 +1,1 @@
-Single-node elastic kibana logstash for testing.
+Single-node prod for CDI / NGLM
