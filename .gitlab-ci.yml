@@ -1,7 +1,7 @@
 stages:
   - build
-  - deploy
   - test
+  - deploy
 
 # run_test_container:
 #   stage: deploy
