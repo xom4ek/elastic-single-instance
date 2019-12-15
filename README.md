@@ -1,1 +1,1 @@
-Single-node prod for CDI / NGLM
+Single-node for PoC of logs CDI / NGLM
